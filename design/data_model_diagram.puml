@@ -21,8 +21,13 @@ package "Cell Data Model" {
 
 package "Grid Data Model" {
   [GridSize : integer] as grid_size
-  [AllCells: collection of Cells] as all_cells
-  'TODO fille this in
+  [AllCells: collection of GridSize*GridSize Cells] as all_cells
+  interface "Grid coordinates are <= GridSize" as grid_coordinates
+  grid_coordinates --> grid_size
+  grid_coordinates --> all_cells
+
+  interface"Cell solution is unique in row, column, and block" as unique_solution
+  unique_solutiom --> all_cells
 }
 
 @enduml
