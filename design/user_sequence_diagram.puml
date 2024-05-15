@@ -1,0 +1,55 @@
+@startuml
+
+title Sequence diagram showing\nprocess for solving a sudoku
+
+
+actor User
+actor PuzzleSource
+actor SolutionValueCollection
+actor Grid
+actor Strategy
+actor SolutionPresenter
+
+
+== Loading ==
+activate User
+
+activate PuzzleSource
+User --> PuzzleSource: access source
+PuzzleSource --> User: read puzzle
+activate SolutionValueCollection
+User --> SolutionValueCollection
+deactivate PuzzleSource
+User --> Grid: Create empty Grid
+activate Grid
+'User --> Grid: Load puzzle into grid
+
+loop For number of values in SolutionValueCollection
+    SolutionValueCollection --> Grid: Set Cell value
+    SolutionValueCollection --> Grid: Clear value candidates from Cell's row
+    SolutionValueCollection --> Grid: Clear value candidates from Cell's column
+    SolutionValueCollection --> Grid: Clear value candidates from Cell's block
+end
+deactivate SolutionValueCollection
+
+== Solving ==
+alt : do while any change was made
+    loop for each Strategy
+        alt : do while SolutionValueCollection is not empty
+            Grid --> Strategy: Apply Strategy
+            activate SolutionValueCollection
+            Strategy --> SolutionValueCollection: Create solution values
+            loop For number of values in SolutionValueCollection
+                SolutionValueCollection --> Grid: Set Cell value
+                SolutionValueCollection --> Grid: Clear value candidates from Cell's row
+                SolutionValueCollection --> Grid: Clear value candidates from Cell's column
+                SolutionValueCollection --> Grid: Clear value candidates from Cell's block
+            end
+        end
+    end
+end
+
+SolutionPresenter --> Grid : Get Grid
+SolutionPresenter --> User :Present solution 
+
+@enduml

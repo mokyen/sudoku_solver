@@ -1,0 +1,28 @@
+@startuml
+
+'This should probably be an object-diagram instead
+
+package "Cell Data Model" {
+  [Size : integer] as cell_size
+  [Candidates : collection of integers] as cell_candidates
+  [Solution : integer] as cell_solution
+  interface "Max size" as cell_max
+  cell_max --> cell_size
+  cell_max --> cell_candidates
+  cell_max --> cell_solution
+
+  interface "Max number of candidates" as candidate_number
+  candidate_number--> cell_candidates
+
+  interface "Candidates size > 0 only if no solution" as candidate_solution
+  candidate_solution --> cell_candidates
+  candidate_solution --> cell_solution
+}
+
+package "Grid Data Model" {
+  [GridSize : integer] as grid_size
+  [AllCells: collection of Cells] as all_cells
+  'TODO fille this in
+}
+
+@enduml

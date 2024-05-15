@@ -1,0 +1,35 @@
+@startuml
+'allow_mixing
+
+title Use Case Diagram\n(w/ actors that can cause change to a use case)
+
+
+skinparam actorStyle awesome
+
+actor "sudoku rules" as sudoku
+actor "Puzzle source" as source
+actor "Strategy creator" as strategist
+actor "Solution output" as output
+
+package SudokuSolver {
+    usecase "Import givens" as import
+    usecase "Initialize puzzle" as init
+    note right of init
+        Assume grid is initialized
+		with propery size and all
+		candidates initially present
+    endnote
+    usecase "Enforce sudoku\nrules" as sudoku_rules
+    usecase "Apply strategies" as apply_strategies
+    usecase "Present solution" as solution_presention
+}
+
+
+
+source --> import
+sudoku --> sudoku_rules
+strategist --> apply_strategies
+output --> solution_presention
+
+
+@enduml
