@@ -1,5 +1,3 @@
-//https://godbolt.org/z/TffcxEvaj
-
 #include <optional>
 #include <set>
 #include <ranges>
@@ -185,6 +183,14 @@ constexpr auto type_name() {
   return name;
 }
 
+std::pair<int, int> convertUserCoordinatesToInternal(int row, int column)
+{
+    int r{row - 1};
+    int c{column - 1};
+
+    return {r,c};
+}
+
 class Grid
 {
 public:
@@ -207,10 +213,6 @@ public:
         else {
             m_blockSize = sqrtDimension;
         }
-
-        // std::cout << "Size: " << cellsInitializer.size() << std::endl;
-
-
     }
 
     std::set<int> getCandidates(int row, int column) {return m_cells[row - 1][column - 1].getCandidates();}
@@ -225,9 +227,7 @@ public:
 
     void setSolution(int row, int column, int value) {
 
-        //Internal variables
-        int c = column - 1;
-        int r = row - 1;
+        auto [r, c] = convertUserCoordinatesToInternal(row, column);
 
         m_cells[r][c].setSolution(value);
 
@@ -240,20 +240,19 @@ public:
                 cellRow[c].removeCandidate(value);
         }
 
-        int blockRowStart{(r % m_blockSize) * m_blockSize};
+        int blockRowStart{(r / m_blockSize) * m_blockSize};
         int blockRowEnd{blockRowStart + m_blockSize};
+        // std::cout << "blockRowStart: " << blockRowStart << "  blockRowEnd: " << blockRowEnd << std::endl;
 
-        int blockColStart{(c % m_blockSize) * m_blockSize};
-        int blockColEnd{blockColStart + m_blockSize - 1};
+        int blockColStart{(c / m_blockSize) * m_blockSize};
+        int blockColEnd{blockColStart + m_blockSize};
+        // std::cout << "blockColStart: " << blockColStart << "  blockColEnd: " << blockColEnd << std::endl;
 
         for (int i = blockRowStart; i < blockRowEnd; i++) {
             for (int j = blockColStart; j < blockColEnd; j++) {
                 m_cells[i][j].removeCandidate(value);
             }
         }
-
-        // int blockSize{m_cells.size()}
-
     }
 
 private:
@@ -393,6 +392,69 @@ TEST(GridTests, SetSolutionDoesNotRemoveFromOutsideRowColumnBlock)
     EXPECT_EQ(uut.getCandidates(3,3), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(3,4), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(4,2), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(4,3), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(4,4), std::set({1,2,3,4}));
+}
+
+TEST(GridTests, SetSolutionRemovesAllCandidatesFromCell2)
+{
+    //Arrange
+    Grid uut{4};
+    //Act
+    uut.setSolution(3,1,2);
+    //Assert
+    EXPECT_EQ(uut.getCandidates(3,1), std::set<int>());
+}
+
+TEST(GridTests, SetSolutionRemovesCandidatesFromCol2)
+{
+    //Arrange
+    Grid uut{4};
+    //Act
+    uut.setSolution(3,1,2);
+    //Assert
+    EXPECT_EQ(uut.getCandidates(1,1), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(2,1), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(4,1), std::set({1,3,4}));
+}
+
+TEST(GridTests, SetSolutionRemovesCandidatesFromRow2)
+{
+    //Arrange
+    Grid uut{4};
+    //Act
+    uut.setSolution(3,1,2);
+    //Assert
+    EXPECT_EQ(uut.getCandidates(3,2), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(3,3), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(3,4), std::set({1,3,4}));
+}
+
+TEST(GridTests, SetSolutionRemovesCandidatesFromBlock2)
+{
+    //Arrange
+    Grid uut{4};
+    //Act
+    uut.setSolution(3,1,2);
+    //Assert
+    EXPECT_EQ(uut.getCandidates(3,2), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(4,1), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(4,2), std::set({1,3,4}));
+}
+
+TEST(GridTests, SetSolutionDoesNotRemoveFromOutsideRowColumnBlock2)
+{
+    //Arrange
+    Grid uut{4};
+    //Act
+    uut.setSolution(3,1,2);
+    //Assert
+    EXPECT_EQ(uut.getCandidates(1,2), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(1,3), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(1,4), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(2,2), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(2,3), std::set({1,2,3,4}));
+    EXPECT_EQ(uut.getCandidates(2,4), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(4,3), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(4,4), std::set({1,2,3,4}));
 }
