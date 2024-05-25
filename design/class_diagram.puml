@@ -1,0 +1,53 @@
+@startuml
+package "Entities" {
+
+  entity "Cell"
+
+  entity Grid
+{
+
+}
+}
+
+package "SW Use Cases" {
+entity "Solver" {
++void addStrategy(IStrategy strategy)
++bool executeAllSolutions(Grid& grid)
+
+-std::vector<IStrategy> m_strategies
+}
+
+struct "CellSolution" {
++int row;
++int col;
++int solution;
+}
+
+entity "IStrategy" {
++CellSolution execute(Grid& grid)
+}
+note "Might be just a typedef in Solver" as N1
+N1 .. IStrategy
+N1 .. Solver
+
+interface "ISolutionPresenter" {
++void PresentSolution(const Grid& grid)
+}
+interface "IPuzzleLoader" {
++void LoadPuzzle(Grid& grid)
+}
+}
+
+Package "Adapters" {
+
+class "HeaderPuzzleLoader" {
++void LoadPuzzle(Grid& grid)
+}
+
+class "CommandLineSolutionPresenter" {
++void PresentSolution(const Grid& grid)
+}
+CommandLineSolutionPresenter -up-|> ISolutionPresenter
+}
+
+@enduml
