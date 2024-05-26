@@ -45,6 +45,23 @@ std::optional<int> m_solution;
 std::set<int> m_candidates;
 };
 
+class Cell_view {
+public:
+explicit Cell_view(const Cell& cell) : m_cell{cell}
+{}
+std::set<int> getCandidates() const {
+    return m_cell.getCandidates();
+}
+std::optional<int> getSolution() const {
+    return m_cell.getSolution();
+}
+
+//TODO decide if this should include X and Y
+
+private:
+const Cell& m_cell;
+};
+
 // int main()
 // {
 //   Cell c{9};
