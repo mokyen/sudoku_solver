@@ -179,6 +179,46 @@ TEST(CellTests, SetSolutionAfterSolutionSetThrows)
     //Assert
     EXPECT_THROW(c.setSolution(1), std::invalid_argument);
 }
+
+TEST(Cell_view_tests, CanCreate)
+{
+    //Arrange
+    Cell c{3};
+    //Act and Assert
+    Cell_view cv(c);
+}
+
+TEST(Cell_view_tests, CanGetCandidates)
+{
+    //Arrange
+    Cell c{3};
+    Cell_view cv(c);
+    //Act and Assert
+    EXPECT_EQ(cv.getCandidates(), std::set({1,2,3}));
+}
+
+TEST(Cell_view_tests, RemoveCandidateViewUpdates)
+{
+    //Arrange
+    Cell c{3};
+    Cell_view cv(c);
+    //Act
+    c.removeCandidate(2);
+    //Assert
+    EXPECT_EQ(cv.getCandidates(), std::set({1,3}));
+}
+
+TEST(Cell_view_tests, SetSolutionViewUpdates)
+{
+    //Arrange
+    Cell c{3};
+    Cell_view cv(c);
+    //Act
+    c.setSolution(2);
+    //Assert
+    EXPECT_EQ(cv.getCandidates(), std::set<int>());
+    EXPECT_EQ(cv.getSolution(), 2);
+}
 #endif
 
 //======================================================
@@ -277,6 +317,7 @@ std::vector<std::pair<int,int>> getLocationsInBlock(int dimension, int row, int 
     return ret;
 }
 
+#if !defined DISABLE_MOST_TESTING
 TEST(FreeFunctionTests, GetLocationsInRow)
 {
     //Arrange
@@ -300,6 +341,7 @@ TEST(FreeFunctionTests, GetLocationsInBlock)
     //Act, and Assert
     EXPECT_EQ(getLocationsInBlock(4, 3, 1), expectedLocations);
 }
+#endif //defined DISABLE_MOST_TESTING
 
 class Grid
 {
@@ -339,16 +381,28 @@ public:
 
     void setSolution(int row, int column, int value) {
 
+        int dimension{static_cast<int>(m_cells.size())};
+
+        if ((row > dimension) || (column > dimension) || (value > dimension))
+        {
+            std::string error("row: " + std::to_string(row)
+                                + "  col: "+ std::to_string(column)
+                                + "  value: "+ std::to_string(value)
+                                + "  dimension: "+ std::to_string(dimension)
+            );
+
+            throw std::invalid_argument( "Dimension not permitted. " + error);
+        }
+
         auto [r, c] = convertUserCoordinatesToInternal(row, column);
+
+        // std::cout << "R.C: " << r << "." << c << std::endl;
 
         m_cells[r][c].setSolution(value);
 
-        int dimension{static_cast<int>(m_cells.size())};
-
-        auto rowlocationsToRemoveSolution{getLocationsInRow(dimension, r)};
-        auto colLocationsToRemoveSolution{getLocationsInCol(dimension, c)};
-        auto blockLocationsToRemoveSolution{getLocationsInBlock(dimension, r, c)};
-        // auto colLocationsToRemoveSolution.insert(locationsToRemoveSolution.end(), getLocationsInCol(dimension, c).begin());
+        auto rowlocationsToRemoveSolution{getLocationsInRow(dimension, row)};
+        auto colLocationsToRemoveSolution{getLocationsInCol(dimension, column)};
+        auto blockLocationsToRemoveSolution{getLocationsInBlock(dimension, row, column)};
 
         auto allLocationsToRemoveSolution{rowlocationsToRemoveSolution};
         allLocationsToRemoveSolution.insert(allLocationsToRemoveSolution.end(),
@@ -360,35 +414,10 @@ public:
 
         for (const auto [r_, c_] : allLocationsToRemoveSolution)
         {
+            // std::cout << "R_.C_: " << r_ << "." << c_ << std::endl;
+            // auto [row_, col_] = convertInternalCoordinatesToUser(r_, c_);
             removeCandidate(r_, c_, value);
-            // auto [r_, c_] = location;
-            
-            // m_cells[r_][c_].removeCandidate(value);
         }
-
-
-        // //Remove candidates from row
-        // for (auto& cell : m_cells[r]) {
-        //         cell.removeCandidate(value);
-        // }
-        // //Remove candidates from column
-        // for (auto& cellRow : m_cells) {
-        //         cellRow[c].removeCandidate(value);
-        // }
-
-        // int blockRowStart{(r / m_blockSize) * m_blockSize};
-        // int blockRowEnd{blockRowStart + m_blockSize};
-        // // std::cout << "blockRowStart: " << blockRowStart << "  blockRowEnd: " << blockRowEnd << std::endl;
-
-        // int blockColStart{(c / m_blockSize) * m_blockSize};
-        // int blockColEnd{blockColStart + m_blockSize};
-        // // std::cout << "blockColStart: " << blockColStart << "  blockColEnd: " << blockColEnd << std::endl;
-
-        // for (int i = blockRowStart; i < blockRowEnd; i++) {
-        //     for (int j = blockColStart; j < blockColEnd; j++) {
-        //         m_cells[i][j].removeCandidate(value);
-        //     }
-        // }
     }
 
 private:
@@ -485,7 +514,7 @@ TEST(GridTests, SetSolutionSetsSolution)
     //Assert
     EXPECT_EQ(uut.getSolution(1,1), 2);
 }
-
+#endif
 TEST(GridTests, SetSolutionRemovesCandidatesFromRow)
 {
     //Arrange
@@ -586,6 +615,9 @@ TEST(GridTests, SetSolutionDoesNotRemoveFromOutsideRowColumnBlock2)
     //Act
     uut.setSolution(3,1,2);
     //Assert
+    EXPECT_EQ(uut.getCandidates(3,2), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(3,3), std::set({1,3,4}));
+    EXPECT_EQ(uut.getCandidates(3,4), std::set({1,3,4}));
     EXPECT_EQ(uut.getCandidates(1,2), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(1,3), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(1,4), std::set({1,2,3,4}));
@@ -595,8 +627,44 @@ TEST(GridTests, SetSolutionDoesNotRemoveFromOutsideRowColumnBlock2)
     EXPECT_EQ(uut.getCandidates(4,3), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(4,4), std::set({1,2,3,4}));
 }
-#endif
+// #endif
 
+void loadPuzzle(Grid& grid, std::vector<std::tuple<int,int,int>> cellsToSet) {
+    for (auto [r, c, solution] : cellsToSet) {
+        // std::cout << "x: " << x << "  y: " << y << " solution: " << solution << std::endl;;
+            grid.setSolution(r, c, solution);
+            // grid.setSolution(1, 1, 3);
+    }
+}
+
+TEST(PuzzleLoaderTests, CanCreate)
+{
+    //Arrange
+    Grid g{4};
+    // g.setSolution(2, 2, 3);
+    //Act
+    loadPuzzle(g, {{1,1,4}, {3,1,2}});
+    //Assert
+    EXPECT_EQ(g.getSolution(1,1), 4);
+    EXPECT_EQ(g.getSolution(3,1), 2);
+
+    EXPECT_EQ(g.getCandidates(1,1), std::set<int>());
+    EXPECT_EQ(g.getCandidates(1,2), std::set({1,2,3}));
+    EXPECT_EQ(g.getCandidates(1,3), std::set({1,2,3}));
+    EXPECT_EQ(g.getCandidates(1,4), std::set({1,2,3}));
+    EXPECT_EQ(g.getCandidates(2,1), std::set({1,3}));
+    EXPECT_EQ(g.getCandidates(2,2), std::set({1,2,3}));
+    EXPECT_EQ(g.getCandidates(2,3), std::set({1,2,3,4}));
+    EXPECT_EQ(g.getCandidates(2,4), std::set({1,2,3,4}));
+    EXPECT_EQ(g.getCandidates(3,1), std::set<int>());
+    EXPECT_EQ(g.getCandidates(3,2), std::set({1,3,4}));
+    EXPECT_EQ(g.getCandidates(3,3), std::set({1,3,4}));
+    EXPECT_EQ(g.getCandidates(3,4), std::set({1,3,4}));
+    EXPECT_EQ(g.getCandidates(4,1), std::set({1,3}));
+    EXPECT_EQ(g.getCandidates(4,2), std::set({1,3,4}));
+    EXPECT_EQ(g.getCandidates(4,3), std::set({1,2,3,4}));
+    EXPECT_EQ(g.getCandidates(4,4), std::set({1,2,3,4}));
+}
 
 
 int main(int argc, char **argv) {
