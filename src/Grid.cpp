@@ -2,7 +2,7 @@
 #include "GridHelpers.h"
 #include <string>
 #include <cmath>
-// #include <iostream>
+#include <iostream>
 #include <stdexcept>
 
 Grid::Grid(int dimension) : m_dimension{dimension} {
@@ -23,6 +23,10 @@ Grid::Grid(int dimension) : m_dimension{dimension} {
     else {
         m_blockSize = sqrtDimension;
     }
+}
+
+int Grid::getDimension() const {
+    return m_dimension;
 }
 
 std::set<int> Grid::getCandidates(int row, int column) const {
@@ -72,6 +76,11 @@ void Grid::setSolution(int row, int column, int value) {
     }
 }
 
+void Grid:: setSolution(LocationSolution locationSolution)
+{
+    this->setSolution(locationSolution.row, locationSolution.col, locationSolution.solution);
+}
+
 void Grid::performLocationValidCheck(int row, int column, int value) const {
 
     if (((row > m_dimension) || (column > m_dimension) || (value > m_dimension)) ||
@@ -85,4 +94,27 @@ void Grid::performLocationValidCheck(int row, int column, int value) const {
 
         throw std::invalid_argument( "Dimension not permitted. " + error);
     }
+}
+
+bool operator==(const Grid &lhs, const Grid &rhs) {
+    bool match{true};
+    auto dimension{lhs.getDimension()};
+    for (int i = 1; i <= dimension; i++) {
+        for (int j = 1; j <= dimension; j++) {
+            if (lhs.getSolution(i, j) != rhs.getSolution(i, j)) {
+                match = false;
+                std::cout << "location " << i << "." << j <<
+                    " doesn't match. Solutions are " << lhs.getSolution(i, j).value_or(-1) << " and " <<  rhs.getSolution(i, j).value_or(-1) << std::endl;
+                break;
+            }
+            if (lhs.getCandidates(i, j) != rhs.getCandidates(i, j)) {
+                match = false;
+                break;
+            }
+        }
+        if (!match) {
+            break;
+        }
+    }
+    return match;
 }

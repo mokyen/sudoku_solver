@@ -11,14 +11,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(the_executable
     Cell.cpp
     # test_Cell.cpp
-    CellView.cpp
+    # CellView.cpp
     # test_CellView.cpp
     GridHelpers.cpp
     # test_GridHelpers.cpp
     Grid.cpp
-    test_Grid.cpp
+    # test_Grid.cpp
     PuzzleLoading.cpp
-    test_PuzzleLoading.cpp
+    # test_PuzzleLoading.cpp
+    StrategyRunner.cpp
+    test_StrategyRunner.cpp
+    Strategies.cpp
+    test_Strategies.cpp
     )
 
 target_link_libraries(the_executable PRIVATE gtest gmock gtest_main)

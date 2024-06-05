@@ -1,3 +1,6 @@
+#ifndef __GRID_HELPERS_H__
+#define __GRID_HELPERS_H__
+
 #include <tuple>
 #include <vector>
 
@@ -12,3 +15,5 @@ std::vector<std::pair<int,int>> getLocationsInCol(int dimension, int col);
 std::vector<std::pair<int,int>> getLocationsInBlock(int dimension, int row, int col);
 
 } //namespace GridHelpers
+
+#endif //__GRID_HELPERS_H__

@@ -202,3 +202,17 @@ TEST(GridTests, SetSolutionDoesNotRemoveFromOutsideRowColumnBlock2)
     EXPECT_EQ(uut.getCandidates(4,3), std::set({1,2,3,4}));
     EXPECT_EQ(uut.getCandidates(4,4), std::set({1,2,3,4}));
 }
+
+TEST(GridTests, SetLocationSolutionSetsSolution)
+{
+    //Arrange
+    Grid uut{4};
+    LocationSolution ls;
+    ls.row = 1;
+    ls.col = 1;
+    ls.solution = 2;
+    //Act
+    uut.setSolution(ls);
+    //Assert
+    EXPECT_EQ(uut.getSolution(1,1), 2);
+}

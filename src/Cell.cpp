@@ -30,7 +30,8 @@ std::optional<int> Cell::getSolution() const {
 
 void Cell::setSolution(int value) {
     if (m_candidates.count(value) == 0) {
-        throw std::invalid_argument( "Solution is not a candidate.");
+        std::string errorMessage{"Solution is not a candidate. Value: " + std::to_string(value)};
+        throw std::invalid_argument(errorMessage);
     }
     else {
         m_solution = value;

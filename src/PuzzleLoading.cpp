@@ -2,10 +2,11 @@
 
 namespace PuzzleLoading {
 
-void loadPuzzle(Grid& grid, std::vector<std::tuple<int,int,int>> cellsToSet) {
-    for (auto [r, c, solution] : cellsToSet) {
+void loadPuzzle(Grid& grid, std::vector<LocationSolution> locationsToSet) {
+    for (const auto& locationSolution : locationsToSet) {
+
         // std::cout << "x: " << x << "  y: " << y << " solution: " << solution << std::endl;;
-            grid.setSolution(r, c, solution);
+            grid.setSolution(locationSolution);
             // grid.setSolution(1, 1, 3);
     }
 }
