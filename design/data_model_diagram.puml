@@ -26,7 +26,7 @@ package "Grid Data Model" {
   grid_coordinates --> grid_size
   grid_coordinates --> all_cells
 
-  interface"Cell solution is unique in row, column, and block" as unique_solution
+  interface "Cell solution is unique in row, column, and block" as unique_solution
   unique_solutiom --> all_cells
 }
 
